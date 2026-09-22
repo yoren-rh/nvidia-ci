@@ -79,6 +79,7 @@ COPY --chown=1001:0 pkg/ ./pkg/
 COPY --chown=1001:0 --chmod=775 tests/ ./tests/
 
 RUN make get-gpu-operator-must-gather && \
-    make get-nfd-must-gather
+    make get-nfd-must-gather && \
+    make get-nno-must-gather
 
 ENTRYPOINT ["bash"]

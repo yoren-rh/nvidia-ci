@@ -69,7 +69,17 @@ get-nfd-must-gather: ## Download NFD must-gather script
 		chmod +x scripts/nfd-must-gather.sh \
 	)
 
-run-tests: get-gpu-operator-must-gather get-nfd-must-gather ## Run test suite
+get-nno-must-gather: ## Download Network Operator SOS report script
+	test -s scripts/network-operator-sosreport.sh || (\
+		SCRIPT_URL="https://raw.githubusercontent.com/Mellanox/network-operator/v26.7.0/scripts/sosreport/kubectl-netop_sosreport" && \
+		if ! curl -SsLf -o scripts/network-operator-sosreport.sh $$SCRIPT_URL; then \
+			echo "Failed to download Network Operator SOS report script" >&2; \
+			exit 1; \
+		fi && \
+		chmod +x scripts/network-operator-sosreport.sh \
+	)
+
+run-tests: get-gpu-operator-must-gather get-nfd-must-gather get-nno-must-gather ## Run test suite
 	@echo "Executing nvidiagpu test-runner script"
 	scripts/test-runner.sh $(ARGS)
 
