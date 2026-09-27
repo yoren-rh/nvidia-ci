@@ -1,5 +1,6 @@
 import json
 from common.utils import logger
+from common.version_changes import apply_diffs, calculate_changes
 
 from gpu_operator_versions.settings import Settings
 from gpu_operator_versions.openshift import fetch_ocp_versions
@@ -235,19 +236,8 @@ def calculate_diffs(old_versions: dict, new_versions: dict, ocp_versions: dict |
         Tuple of (diffs, gpu_catalog_entries) where gpu_catalog_entries are NVIDIA GPU
         operator catalog entries that can be used for warnings
     """
-    diffs = {}
+    diffs = calculate_changes(old_versions, new_versions)
     gpu_catalog_entries = []
-
-    for key, value in new_versions.items():
-        if isinstance(value, dict):
-            logger.info(f'Comparing versions under "{key}"')
-            sub_diff, _ = calculate_diffs(old_versions.get(key, {}), value)
-            if sub_diff:
-                diffs[key] = sub_diff
-        else:
-            if key not in old_versions or old_versions[key] != value:
-                logger.info(f'Key "{key}" has changed: {old_versions.get(key)} > {value}')
-                diffs[key] = value
 
     # Filter GPU operator diffs by catalog availability
     if check_catalog and VERSION_GPU_OPERATOR in diffs and ocp_versions and support_matrix:
@@ -319,18 +309,6 @@ def filter_new_gpu_versions_by_catalog(
             filtered_diffs[gpu_version] = gpu_full_version
 
     return filtered_diffs, gpu_catalog_entries
-
-
-def apply_diffs(old_versions: dict, diffs: dict) -> dict:
-    """Apply diffs to old versions to create updated versions."""
-    updated = dict(old_versions)
-    for key, value in diffs.items():
-        if isinstance(value, dict) and key in updated and isinstance(updated[key], dict):
-            # Recursively apply nested diffs
-            updated[key] = apply_diffs(updated[key], value)
-        else:
-            updated[key] = value
-    return updated
 
 
 def main():

@@ -1,55 +1,23 @@
 #!/usr/bin/env python
-import os
 import re
 import requests
 
 
 from gpu_operator_versions.settings import Settings
 from common.utils import logger
-from gpu_operator_versions.version_utils import max_version
+from common.image_tags import latest_stable_patches, list_nvcr_tags
 
-GPU_OPERATOR_NVCR_AUTH_URL = 'https://nvcr.io/proxy_auth?scope=repository:nvidia/gpu-operator:pull'
-GPU_OPERATOR_NVCR_TAGS_URL = 'https://nvcr.io/v2/nvidia/gpu-operator/tags/list'
+GPU_OPERATOR_NVCR_REPOSITORY = 'nvidia/gpu-operator'
+GPU_OPERATOR_STABLE_TAG = re.compile(r'^v(?P<line>2\d\.\d+)\.(?P<patch>\d+)$')
 
 GPU_OPERATOR_GHCR_AUTH_URL = 'https://ghcr.io/token?scope=repository:nvidia/gpu-operator/gpu-operator-bundle:pull'
 GPU_OPERATOR_GHCR_LATEST_URL = 'https://ghcr.io/v2/nvidia/gpu-operator/gpu-operator-bundle/manifests/main-latest'
 
-version_not_found = '1.0.0'
-
 def get_operator_versions(settings: Settings) -> dict:
-
-    logger.info('Calling NVCR authentication API')
-    auth_req = requests.get(GPU_OPERATOR_NVCR_AUTH_URL,
-                            allow_redirects=True,
-                            headers={'Content-Type': 'application/json'},
-                            timeout=settings.request_timeout_sec)
-    auth_req.raise_for_status()
-    token = auth_req.json()['token']
-
     logger.info('Listing tags of the GPU operator image')
-    req = requests.get(GPU_OPERATOR_NVCR_TAGS_URL,
-                       headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
-                       timeout=settings.request_timeout_sec)
-    req.raise_for_status()
-
-    tags = req.json()['tags']
+    tags = list_nvcr_tags(GPU_OPERATOR_NVCR_REPOSITORY, settings.request_timeout_sec)
     logger.debug(f'Received GPU operator image tags: {tags}')
-
-    prog = re.compile(r'^v(?P<minor>2\d\.\d+)\.(?P<patch>\d+)$')
-
-    versions = {}
-    for t in tags:
-        match = prog.match(t)
-        if not match:
-            continue
-
-        minor = match.group('minor')
-        patch = match.group('patch')
-        full_version = f'{minor}.{patch}'
-        existing = versions.get(minor, version_not_found)
-        versions[minor] = max_version(existing, full_version)
-
-    return versions
+    return latest_stable_patches(tags, GPU_OPERATOR_STABLE_TAG)
 
 def get_sha(settings: Settings) -> str:
 

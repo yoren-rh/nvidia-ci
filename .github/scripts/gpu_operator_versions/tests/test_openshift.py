@@ -11,7 +11,7 @@ class TestOpenShift(unittest.TestCase):
     """Test cases for gpu_operator_versions/openshift.py functions."""
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_basic(self, mock_get, mock_settings):
         """Test basic functionality of fetch_ocp_versions."""
         # Mock settings
@@ -41,7 +41,7 @@ class TestOpenShift(unittest.TestCase):
         mock_response.raise_for_status.assert_called_once()
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_ignored(self, mock_get, mock_settings):
         """Test that ignored versions are correctly filtered out."""
         # Mock settings with a regex to ignore 4.10, 4.12 and 4.19.0-rc.1
@@ -67,7 +67,7 @@ class TestOpenShift(unittest.TestCase):
         self.assertEqual(result, expected)
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_highest_patch(self, mock_get, mock_settings):
         """Test that highest patch version is selected for each minor version."""
         # Mock settings
@@ -94,7 +94,7 @@ class TestOpenShift(unittest.TestCase):
         self.assertEqual(result, expected)
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_empty_response(self, mock_get, mock_settings):
         """Test behavior when API returns an empty list of versions."""
         # Mock settings
@@ -114,7 +114,7 @@ class TestOpenShift(unittest.TestCase):
         self.assertEqual(result, {})
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_api_error(self, mock_get, mock_settings):
         """Test error handling when API request fails."""
         # Mock settings
@@ -132,7 +132,7 @@ class TestOpenShift(unittest.TestCase):
             fetch_ocp_versions(mock_settings)
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_invalid_response(self, mock_get, mock_settings):
         """Test behavior when API returns an invalid response structure."""
         # Mock settings
@@ -150,7 +150,7 @@ class TestOpenShift(unittest.TestCase):
             fetch_ocp_versions(mock_settings)
 
     @patch('gpu_operator_versions.openshift.Settings')
-    @patch('gpu_operator_versions.openshift.requests.get')
+    @patch('common.openshift_versions.requests.get')
     def test_fetch_ocp_versions_invalid_semver(self, mock_get, mock_settings):
         """Test behavior when API returns invalid semver format."""
         # Mock settings

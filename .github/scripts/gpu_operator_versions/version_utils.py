@@ -1,14 +1,4 @@
-"""Version comparison utilities shared across GPU operator workflows."""
-
-from semver import Version
-
-
-def max_version(a: str, b: str) -> str:
-    """
-    Parse and compare two semver versions.
-    Return the higher of them.
-    """
-    return str(max(map(Version.parse, (a, b))))
+"""Version ordering utilities used by GPU operator workflows."""
 
 def get_latest_versions(versions: list, count: int) -> list:
     if count <= 0:
